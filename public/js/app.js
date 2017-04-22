@@ -6,11 +6,22 @@ $(function(){
   $('.ui.modal')
     .modal()
   ;
+  $('.dropdown')
+    .dropdown({
+      onChange: function(value, text, $selectedItem) {
+          if(value != $domain) {
+              $domain && value && socket.emit('request mailaddr', {domain: value});
+              $domain = value; 
+          }
+      }
+    })
+  ;
 
   var clipboard = new Clipboard('.copyable');
 
   $customShortId = $('#customShortid');
   $shortId = $('#shortid');
+  $domain = null; 
   $cusstomTheme = 'check';
   $placeholder_old = '请等待分配临时邮箱';
   $placeholder_new = '请输入不带后缀邮箱账号';
@@ -19,6 +30,8 @@ $(function(){
     var editEnable = true;
     $shortId.prop('disabled', false);
     if(self.hasClass('edit')) {
+      $shortId.prop('data-old', $shortId.val());
+      console.log($shortId.prop('data-old'));
       $shortId.val('');
       self.removeClass('edit');
       self.toggleClass($cusstomTheme);
@@ -28,11 +41,13 @@ $(function(){
       self.removeClass('check');
       self.toggleClass('edit');
       $shortId.prop('placeholder',$placeholder_old);
-      $mailUser = $shortId.val();
-      var mailaddress = $mailUser + '@' + $shortId.prop( "mailsuffix" );
-      setMailAddress($mailUser);
-      $shortId.val(mailaddress);
-      window.location.reload();
+      if($shortId.val() != "") {
+          $mailUser = $shortId.val();
+          setMailAddress($mailUser, $domain);
+          socket.emit("set mailaddr", {id: $mailUser, domain: $domain});
+      } else {
+          $shortId.val($shortId.prop('data-old'));
+      }
     }
   });
   
@@ -53,30 +68,32 @@ $(function(){
 
   var socket = io();
 
-  var setMailAddress = function(id) {
-    localStorage.setItem('shortid', id);
-    var mailaddress = id + '@' + location.hostname;
-    $('#shortid').val(mailaddress).parent().siblings('button').find('.mail').attr('data-clipboard-text', mailaddress);
+  var setMailAddress = function(id, domain) {
+    localStorage.setItem('mailaddr', id + "@" + domain);
+    $('#shortid').val(id).parent().siblings().find('.copy').attr('data-clipboard-text', id + "@" + domain);
+    $("div.dropdown").dropdown("set value", domain);
+    $("div.dropdown").dropdown("set text", domain);
   };
 
   $('#refreshShortid').click(function() {
-    socket.emit('request shortid', true);
+    socket.emit('request mailaddr', {domain: $domain});
   });
 
   socket.on('connect', function() {
     if(('localStorage' in window)) {
-      var shortid = localStorage.getItem('shortid');
-      if(!shortid) {
-        socket.emit('request shortid', true);
+      var mailaddress = localStorage.getItem('mailaddr');
+      if(!mailaddress) {
+        socket.emit('request mailaddr', {domain: $domain || "fuckdog.tk"});
       }
       else {
-        socket.emit('set shortid', shortid);
+        var _ = mailaddress.split("@");
+        socket.emit('set mailaddr', {id: _[0], domain: _[1]});
       }
     }
   });
 
-  socket.on('shortid', function(id) {
-    setMailAddress(id);
+  socket.on('mailaddr', function(data) {
+    setMailAddress(data.id, data.domain);
   });
 
   socket.on('mail', function(mail) {

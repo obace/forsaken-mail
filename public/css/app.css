@@ -30,8 +30,19 @@ body {
     -moz-user-select: initial;
     -ms-user-select: initial;
     user-select: initial;
+    text-align: right;
 }
 
-.mailaddress {
-    font-size: 1.14285714rem !important;
+.copyable {
+    margin-left: 10px !important;
+}
+
+.dropdown {
+    top: 5px;
+}
+
+.domain {
+    height: 24px;
+    position: relative;
+    top: 0;
 }

@@ -15,30 +15,31 @@ module.exports = function(io) {
     let exp = /[\w\._\-\+]+@[\w\._\-\+]+/i;
     if(exp.test(to)) {
       let matches = to.match(exp);
-      let shortid = matches[0].substring(0, matches[0].indexOf('@'));
-      if(onlines.has(shortid)) {
-        onlines.get(shortid).emit('mail', data);
+      let addr = matches[0];
+      if(onlines.has(addr)) {
+        onlines.get(addr).emit('mail', data);
       }
     }
   });
 
   io.on('connection', socket => {
-    socket.on('request shortid', function() {
-      onlines.delete(socket.shortid);
-      socket.shortid = shortid.generate().toLowerCase(); // generate shortid for a request
-      onlines.set(socket.shortid, socket); // add incomming connection to online table
-      socket.emit('shortid', socket.shortid);
+    socket.on('request mailaddr', function(data) {
+      onlines.delete(socket.mailaddr);
+      var _id = shortid.generate().toLowerCase();
+      socket.mailaddr = _id + "@" + data.domain; // generate shortid for a request
+      onlines.set(socket.mailaddr, socket); // add incomming connection to online table
+      socket.emit('mailaddr', {id: _id, domain: data.domain});
     });
 
-    socket.on('set shortid', function(id) {
-      onlines.delete(socket.shortid);
-      socket.shortid = id;
-      onlines.set(socket.shortid, socket);
-      socket.emit('shortid', socket.shortid);
+    socket.on('set mailaddr', function(data) {
+      onlines.delete(socket.mailaddr);
+      socket.mailaddr = data.id + "@" + data.domain;
+      onlines.set(socket.mailaddr, socket);
+      socket.emit('mailaddr', data);
     })
     
     socket.on('disconnect', socket => {
-      onlines.delete(socket.shortid);
+      onlines.delete(socket.mailaddr);
     });
   });
 };
