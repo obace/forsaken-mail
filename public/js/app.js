@@ -116,4 +116,12 @@ $(function(){
       .append($('<td>').text((new Date(mail.headers.date)).toLocaleTimeString()));
     $maillist.prepend($tr);
   });
+
+  socket.on('stat', function(stat) {
+      console.log(stat);
+      $('.mailcount').html(stat.mail);
+      $('.boxcount').html(stat.box);
+      $('.onlinecount').html(stat.online);
+      $('.usercount').html(stat.user);
+  });
 });

@@ -46,3 +46,7 @@ body {
     position: relative;
     top: 0;
 }
+
+.stat i {
+    margin-left: 10px!important;
+}
