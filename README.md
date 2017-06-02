@@ -2,7 +2,7 @@ Forsaken-Mail
 ==============
 A self-hosted disposable mail service.
 
-[Online Demo](http://disposable.dhc-app.com)
+[Online Demo](https://tmp.yooooo.us)
 
 ### Installation
 
@@ -13,6 +13,10 @@ In order to receive emails, your smtp server address should be made available so
 * Then an A record: ```mxsubdomain.domain.com A the.ip.address.of.your.mailin.server```. This tells at which ip address the mail server can be found.
 
 You can fire up Mailin (see next section) and use an [smtp server tester](http://mxtoolbox.com/diagnostic.aspx) to verify that everything is correct.
+
+#### Setup config.json
+
+Copy `config-default.json` to `config.json` and put all your domains into variable `domains` in `config.json`.
 
 #### Let's Go
 general way:

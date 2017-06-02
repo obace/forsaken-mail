@@ -4,5 +4,5 @@
     "port": 25,
     "disableWebhook": true
   },
-  "host": "disposable.dhc-app.com"
+  "domain": ["disposable.dhc-app.com"]
 }
