@@ -6,6 +6,13 @@
 
 let shortid = require('shortid');
 let mailin = require('./mailin');
+let path = require('path');
+let config
+try {
+    config = require(path.join(__dirname, '..', 'config.json'));
+} catch(e) {
+    config = require(path.join(__dirname, '..', 'config-default.json'));
+}
 
 let onlines = new Map();
 let stat = {mail:0, box:0, online:0, user:0};
@@ -31,6 +38,7 @@ module.exports = function(io) {
     /*onlines.forEach(function(v, k, m){
       v.emit('stat', stat);
     });*/
+    socket.emit('domains', {"domains": config.domains});
     var _intv = setInterval(function(){socket.emit('stat', stat)}, 10000);
 
     socket.on('request mailaddr', function(data) {
