@@ -55,11 +55,18 @@ $(function(){
   $maillist = $('#maillist');
 
   $maillist.on('click', 'tr', function() {
+    var __this = $(this);
     var mail = $(this).data('mail');
     $('#mailcard .header').text(mail.headers.subject || '无主题');
     $('#mailcard .content:last').html(mail.html);
-    $('#mailcard i').click(function() {
+    $('#mailcard .code').click(function() {
       $('#raw').modal('show');
+    });
+    $('#mailcard .trash').click(function() {
+      __this.remove();
+      $('#mailcard .header').text("");
+      $('#mailcard .content:last').html("毛都没有( ͡° ͜ʖ ͡°)");
+      db && getStore().delete(mail.messageId);
     });
     $('#raw .header').text('RAW');
     $('#raw .content').html($('<pre>').html($('<code>').addClass('language-json').html(JSON.stringify(mail, null, 2))));
@@ -75,15 +82,37 @@ $(function(){
     $("div.dropdown").dropdown("set text", domain);
   };
 
+  var showMail = function(mail) {
+    $tr = $('<tr>').data('mail', mail);
+    $tr
+      .append($('<td>').text(mail.headers.from))
+      .append($('<td>').text(mail.headers.subject || '无主题'))
+      .append($('<td>').text((new Date(mail.headers.date)).toLocaleTimeString()));
+    $maillist.prepend($tr);
+  }
+
   $('#refreshShortid').click(function() {
     socket.emit('request mailaddr', {domain: $domain});
   });
 
+  $('#flushMails').click(function() {
+    db && getStore().clear();
+    $maillist.html("");
+  });
+
   socket.on('connect', function() {
+  });
+
+  socket.on('domains', function(data) {
+    $.each(data.domains, function(index, value){
+      $div = $('<div>').addClass('item').text(value);
+      $('.dropdown .menu').append($div);
+    });
+
     if(('localStorage' in window)) {
       var mailaddress = localStorage.getItem('mailaddr');
       if(!mailaddress) {
-        socket.emit('request mailaddr', {domain: $domain || "fuckdog.tk"});
+        socket.emit('request mailaddr', {domain: $domain || data.domains[0]});
       }
       else {
         var _ = mailaddress.split("@");
@@ -109,19 +138,45 @@ $(function(){
         })
       }
     }
-    $tr = $('<tr>').data('mail', mail);
-    $tr
-      .append($('<td>').text(mail.headers.from))
-      .append($('<td>').text(mail.headers.subject || '无主题'))
-      .append($('<td>').text((new Date(mail.headers.date)).toLocaleTimeString()));
-    $maillist.prepend($tr);
+
+    showMail(mail);
+
+    db && getStore().put(mail);
   });
 
   socket.on('stat', function(stat) {
-      console.log(stat);
       $('.mailcount').html(stat.mail);
       $('.boxcount').html(stat.box);
       $('.onlinecount').html(stat.online);
       $('.usercount').html(stat.user);
   });
+
+  var indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+  var open = indexedDB.open("forsaken-mail", 1);
+  var db;
+
+  open.onupgradeneeded = function() {
+      open.result.createObjectStore("MailStore", {keyPath: "messageId"});
+      //var index = store.createIndex("NameIndex", ["name.last", "name.first"]);
+  };
+
+  open.onsuccess = function() {
+      db = open.result;
+      getStore().getAll().onsuccess = function(e) {
+          $.each(e.target.result, function(index, value){
+            showMail(value);
+          })
+      };
+  }
+
+  var getStore = function () {
+    if(!db) return;
+    var tx = db.transaction("MailStore", "readwrite");
+    var store = tx.objectStore("MailStore");
+    tx.oncomplete = function() {
+      //db.close();
+    };
+    return store;
+  }
+
 });

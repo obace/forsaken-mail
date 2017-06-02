@@ -17,6 +17,10 @@ body {
     margin-right: 1.5em !important;
 }
 
+.stat span {
+    color: #aaa;
+}
+
 .main.container {
     margin-top: 7em;
 }
