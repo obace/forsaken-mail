@@ -31,7 +31,6 @@ $(function(){
     $shortId.prop('disabled', false);
     if(self.hasClass('edit')) {
       $shortId.prop('data-old', $shortId.val());
-      console.log($shortId.prop('data-old'));
       $shortId.val('');
       self.removeClass('edit');
       self.toggleClass($cusstomTheme);
@@ -104,6 +103,7 @@ $(function(){
   });
 
   socket.on('domains', function(data) {
+    $('.dropdown .menu').html("");
     $.each(data.domains, function(index, value){
       $div = $('<div>').addClass('item').text(value);
       $('.dropdown .menu').append($div);

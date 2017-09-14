@@ -11,6 +11,7 @@ let config
 try {
     config = require(path.join(__dirname, '..', 'config.json'));
 } catch(e) {
+    console.log(e);
     config = require(path.join(__dirname, '..', 'config-default.json'));
 }
 
@@ -53,6 +54,10 @@ module.exports = function(io) {
     });
 
     socket.on('set mailaddr', function(data) {
+      if(config.domains.indexOf(data.domain) == -1) {
+        socket.emit('mailaddr', socket.mailaddr);
+        return;
+      } 
       onlines.delete(socket.mailaddr);
       socket.mailaddr = data.id + "@" + data.domain;
       onlines.set(socket.mailaddr, socket);
@@ -61,7 +66,7 @@ module.exports = function(io) {
       socket.emit('stat', stat);
     })
     
-    socket.on('disconnect', socket => {
+    socket.on('disconnect', reason => {
       onlines.delete(socket.mailaddr);
       stat.online = onlines.size;
       /*onlines.forEach(function(v, k, m){
@@ -69,5 +74,6 @@ module.exports = function(io) {
       });*/
       clearInterval(_intv);
     });
+
   });
 };
