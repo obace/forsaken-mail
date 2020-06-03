@@ -8,6 +8,20 @@ let shortid = require('shortid');
 let mailin = require('./mailin');
 let path = require('path');
 let config
+function load_config() {
+    let cpath = path.join(__dirname, '..', 'config.json')
+    delete require.cache[require.resolve(cpath)];
+    try {
+        config = require(cpath);
+    } catch(e) {
+        console.log(e);
+        config = require(path.join(__dirname, '..', 'config-default.json'));
+    }
+}
+
+load_config();
+setInterval(load_config, 3600);
+
 try {
     config = require(path.join(__dirname, '..', 'config.json'));
 } catch(e) {
