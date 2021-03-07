@@ -4,5 +4,5 @@
     "port": 25,
     "disableWebhook": true
   },
-  "domains": ["mod.obagg.com","zou.cnstu.run","bu.cnstu.run","mosidu.cnstu.run"]
+  "domains": ["iitel.org","zou.cnstu.run","bu.cnstu.run","mosidu.cnstu.run"]
 }
