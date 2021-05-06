@@ -1,11 +1,12 @@
 {
   "name": "forsaken-mail",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "app.js",
   "scripts": {
     "start": "node ./bin/www",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start-blacklist": "BLACKLIST=1 node ./bin/www",
+    "test": "PORT=3002 BLACKLIST=1 node ./bin/www"
   },
   "engines": {
     "node": ">=4.0.0"
@@ -24,8 +25,9 @@
     "body-parser": "^1.14.2",
     "debug": "^2.2.0",
     "express": "^4.13.3",
-    "mailin": "^3.0.2",
+    "node-mailin": "*",
     "shortid": "^2.2.4",
-    "socket.io": "^1.3.7"
+    "socket.io": "^1.3.7",
+    "tracer": "^1.1.2"
   }
 }
