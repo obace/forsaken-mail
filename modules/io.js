@@ -34,13 +34,29 @@ let stat = {mail:0, box:0, online:0, user:0};
 
 module.exports = function(io) {
   mailin.on('message', function(connection, data) {
-    let to = data.headers.to.toLowerCase();
+    console.log("*****************************")
+    console.log("标题：" + data.subject)
+    console.log("HTML：" + data.textAsHtml)
+    console.log("文本：" + data.text)
+    console.log("时间：" + data.date)
+    console.log("发件：" + data.from.text)
+    console.log("*****************************")
+
+    let to = data.envelopeTo[0].address.toLowerCase();
     let exp = /[\w\._\-\+]+@[\w\._\-\+]+/i;
     if(exp.test(to)) {
       stat.mail += 1;
       let matches = to.match(exp);
       let addr = matches[0];
       if(onlines.has(addr)) {
+        let _data = {
+            "subject": data.subject,
+            "text" : data.text,
+            "date" : data.date,
+            "from" : data.from.text,
+            "texthtml" : data.textAsHtml,
+            "html" : data.html
+        }
         onlines.get(addr)
             .emit('mail', data)
             .emit('stat', stat);
@@ -48,6 +64,17 @@ module.exports = function(io) {
     }
   });
 
+    
+  mailin.on('validateSender', function(session, address, callback) {
+    if (/sharepointonline.com/ig.test(address)) { 
+        let _err = new Error('You are blocked(TM你已经被我ban了)'); 
+        _err.responseCode = 530; 
+        callback(_err);
+    } else {
+        callback()
+    }   
+  })
+    
   io.on('connection', socket => {
     stat.user += 1;
     /*onlines.forEach(function(v, k, m){
