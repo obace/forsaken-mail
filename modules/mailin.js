@@ -5,7 +5,7 @@
 'use strict';
 
 let path = require('path');
-let mailin = require('mailin');
+let mailin = require('node-mailin');
 let config
 function load_config() {
     let cpath = path.join(__dirname, '..', 'config.json')
